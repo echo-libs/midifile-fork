@@ -16,7 +16,6 @@
 #include "Binasc.h"
 
 #include <algorithm>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -24,6 +23,11 @@
 #include <string>
 #include <vector>
 
+#ifdef _MSC_VER
+#include <Windows.h>
+#endif
+#include <filesystem>
+#include <fstream>
 
 namespace smf {
 
@@ -192,13 +196,31 @@ MidiFile& MidiFile::operator=(MidiFile&& other) {
 //      File and store its contents in the object.
 //
 
-bool MidiFile::read(const std::string& filename) {
+	bool MidiFile::read(const std::string& filename) {
 	m_timemapvalid = 0;
 	setFilename(filename);
 	m_rwstatus = true;
 
-	std::fstream input;
-	input.open(filename.c_str(), std::ios::binary | std::ios::in);
+#ifdef _MSC_VER
+	int wsize = MultiByteToWideChar(CP_UTF8, 0, filename.c_str(),
+									 static_cast<int>(filename.size()),
+									 nullptr, 0);
+	if (wsize == 0) {
+		m_rwstatus = false;
+		return m_rwstatus;
+	}
+
+	std::wstring wideFilename(wsize, 0);
+	MultiByteToWideChar(CP_UTF8, 0, filename.c_str(),
+						static_cast<int>(filename.size()),
+						&wideFilename[0], wsize);
+
+	std::filesystem::path fsPath(wideFilename);
+#else
+	std::filesystem::path fsPath(filename);
+#endif
+
+	std::ifstream input(fsPath, std::ios::binary);
 
 	if (!input.is_open()) {
 		m_rwstatus = false;
@@ -273,8 +295,26 @@ bool MidiFile::readSmf(const std::string& filename) {
 	setFilename(filename);
 	m_rwstatus = true;
 
-	std::fstream input;
-	input.open(filename.c_str(), std::ios::binary | std::ios::in);
+#ifdef _MSC_VER
+	int wsize = MultiByteToWideChar(CP_UTF8, 0, filename.c_str(),
+									 static_cast<int>(filename.size()),
+									 nullptr, 0);
+	if (wsize == 0) {
+		m_rwstatus = false;
+		return m_rwstatus;
+	}
+
+	std::wstring wideFilename(wsize, 0);
+	MultiByteToWideChar(CP_UTF8, 0, filename.c_str(),
+						static_cast<int>(filename.size()),
+						&wideFilename[0], wsize);
+
+	std::filesystem::path fsPath(wideFilename);
+#else
+	std::filesystem::path fsPath(filename);
+#endif
+
+	std::ifstream input(fsPath, std::ios::binary);
 
 	if (!input.is_open()) {
 		m_rwstatus = false;

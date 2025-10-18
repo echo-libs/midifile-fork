@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.29)
 
 project(midifile C CXX)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(CheckIncludeFiles)
@@ -13,7 +13,7 @@ check_include_files(unistd.h HAVE_UNISTD_H)
 check_include_files(humdrum.h HAVE_HUMDRUM_H)
 check_include_files(sys/io.h HAVE_SYS_IO_H)
 
-option(BUILD_MIDILIBRARY_ONLY "Build only the midifile library" OFF)
+option(BUILD_MIDILIBRARY_ONLY "Build only the midifile library" ON)
 
 ##############################
 ##
@@ -27,7 +27,7 @@ endif()
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-    option(STATIC_CRT "Use static CRT libraries" OFF)
+    option(STATIC_CRT "Use static CRT libraries" ON)
 
     # Rewrite command line flags to use /MT if necessary
     if(STATIC_CRT)
